@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grupo 2 Plus — 7ª División — Apertura 2026-2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#ECEFEA;
+  --card:#FFFFFF;
+  --ink:#12211A;
+  --ink-soft:#5A6960;
+  --rule:#C8D1C7;
+  --pitch:#1F6B45;
+  --pitch-pale:#E2EDE6;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html{-webkit-text-size-adjust:100%}
+
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Archivo',system-ui,sans-serif;
+  font-variation-settings:'wdth' 100;
+  font-size:16px;
+  line-height:1.5;
+  padding:32px 20px 80px;
+}
+
+.wrap{max-width:860px;margin:0 auto}
+
+/* ---------- Encabezado ---------- */
+
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:20px}
+
+.masthead h1{
+  font-size:clamp(38px,9vw,72px);
+  font-weight:900;
+  font-variation-settings:'wdth' 88;
+  line-height:.94;
+  letter-spacing:-.02em;
+}
+
+.masthead p{
+  margin-top:10px;
+  font-size:clamp(15px,2.4vw,19px);
+  font-weight:500;
+  color:var(--ink-soft);
+  max-width:60ch;
+}
+
+.statusbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:8px 18px;
+  padding:14px 0 26px;
+  font-size:14px;
+  color:var(--ink-soft);
+}
+
+.statusbar .tally{font-weight:600;color:var(--ink)}
+
+.refresh{
+  font:inherit;
+  font-weight:600;
+  color:var(--pitch);
+  background:none;
+  border:none;
+  border-bottom:1.5px solid var(--pitch);
+  padding:0 0 1px;
+  cursor:pointer;
+  margin-left:auto;
+}
+.refresh:hover{color:var(--ink);border-color:var(--ink)}
+.refresh:disabled{opacity:.4;cursor:default}
+.refresh:focus-visible{outline:2px solid var(--pitch);outline-offset:3px}
+
+/* ---------- Jornadas ---------- */
+
+.jornada{
+  display:grid;
+  grid-template-columns:96px 1fr;
+  gap:0 24px;
+  padding:26px 0;
+  border-bottom:1px solid var(--rule);
+}
+
+.jornada.is-next{background:var(--pitch-pale);margin:0 -16px;padding:26px 16px}
+
+.jnum{position:relative}
+
+.jnum b{
+  display:block;
+  font-size:56px;
+  font-weight:900;
+  font-variation-settings:'wdth' 64;
+  line-height:.8;
+  color:var(--pitch);
+}
+
+.jnum span{
+  display:block;
+  margin-top:6px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--ink-soft);
+}
+
+.daystamp{
+  font-size:13px;
+  font-weight:600;
+  color:var(--ink-soft);
+  margin-bottom:12px;
+}
+
+/* ---------- Partidos ---------- */
+
+.match{
+  display:grid;
+  grid-template-columns:1fr 78px 1fr;
+  align-items:center;
+  gap:4px 10px;
+  padding:12px 0;
+  border-top:1px solid var(--rule);
+}
+.match:first-of-type{border-top:none;padding-top:0}
+
+.team{font-size:16px;font-weight:600;line-height:1.25}
+.team.home{text-align:right}
+
+.mid{
+  text-align:center;
+  font-weight:900;
+  font-size:20px;
+  font-variation-settings:'wdth' 82;
+  white-space:nowrap;
+}
+.mid.pending{
+  font-size:13px;
+  font-weight:600;
+  font-variation-settings:'wdth' 100;
+  color:var(--ink-soft);
+}
+
+.detail{
+  grid-column:1/-1;
+  text-align:center;
+  font-size:13px;
+  color:var(--ink-soft);
+  margin-top:2px;
+}
+
+.bye{
+  padding:12px 0;
+  border-top:1px solid var(--rule);
+  font-size:14px;
+  color:var(--ink-soft);
+}
+.bye b{font-weight:600;color:var(--ink)}
+
+/* ---------- Estados ---------- */
+
+.notice{
+  background:var(--card);
+  border:1px solid var(--rule);
+  border-left:4px solid var(--pitch);
+  padding:20px;
+  margin-top:24px;
+}
+.notice h2{font-size:19px;font-weight:800;margin-bottom:8px}
+.notice p{font-size:15px;color:var(--ink-soft);max-width:62ch;margin-bottom:10px}
+.notice ol{margin:0 0 14px 20px;font-size:15px;color:var(--ink-soft)}
+.notice li{margin-bottom:5px}
+.notice code{
+  font-family:ui-monospace,monospace;
+  font-size:13px;
+  background:var(--pitch-pale);
+  padding:1px 5px;
+}
+
+.keyform{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.keyform input{
+  flex:1 1 300px;
+  font:inherit;
+  font-size:14px;
+  padding:9px 12px;
+  border:1px solid var(--rule);
+  background:var(--paper);
+  color:var(--ink);
+}
+.keyform input:focus-visible{outline:2px solid var(--pitch);outline-offset:1px}
+.keyform button{
+  font:inherit;
+  font-weight:700;
+  padding:9px 20px;
+  border:none;
+  background:var(--pitch);
+  color:#fff;
+  cursor:pointer;
+}
+.keyform button:hover{background:var(--ink)}
+.keyform button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.foot{
+  margin-top:44px;
+  font-size:13px;
+  color:var(--ink-soft);
+  max-width:62ch;
+}
+.foot a{color:var(--pitch)}
+
+@media (max-width:620px){
+  body{padding:22px 16px 60px}
+  .jornada{grid-template-columns:1fr;gap:14px}
+  .jornada.is-next{margin:0 -12px;padding:22px 12px}
+  .jnum{display:flex;align-items:baseline;gap:10px;border-bottom:1.5px solid var(--pitch);padding-bottom:6px}
+  .jnum b{font-size:34px}
+  .jnum span{margin-top:0}
+  .match{grid-template-columns:1fr;gap:2px;text-align:center}
+  .team.home{text-align:center}
+  .mid{font-size:22px;padding:2px 0}
+}
+
+@media (prefers-reduced-motion:no-preference){
+  .refresh,.keyform button{transition:color .15s,background .15s,border-color .15s}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <h1>Grupo 2 Plus</h1>
+    <p>7ª División, Torneo Apertura 2026-2027. Rol de juegos y resultados de las once jornadas.</p>
+  </header>
+
+  <div class="statusbar">
+    <span class="tally" id="tally">Cargando…</span>
+    <span id="stamp"></span>
+    <button class="refresh" id="refresh" type="button">Actualizar</button>
+  </div>
+
+  <main id="out"></main>
+
+  <p class="foot">
+    Los datos vienen de la AFAEJAL y se leen en vivo cada vez que abres o actualizas esta página.
+    Los partidos sin hora aparecen como “por confirmar”: la liga decreta la jornada conforme se acuerdan.
+    Fuente: <a href="https://www.afaejal.mx/matches">afaejal.mx</a>
+  </p>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  CONFIGURACIÓN
+//  Pega la llave pública (anon key) de AFAEJAL entre las comillas,
+//  o déjala vacía y captúrala desde la propia página la primera vez.
+// ─────────────────────────────────────────────────────────────
+const CONFIG = {
+  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3bmJvZWxtc2NkbWtkbXFmZXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyNjU0OTEsImV4cCI6MjA3NTg0MTQ5MX0.GBK4EJJ7mYH_h9zDOQazHCIyIDrwzA19nREGJRZkEgI',
+  base:   'https://fwnboelmscdmkdmqfera.supabase.co/rest/v1/partidos',
+  torneo: '02dae07e-46be-40fb-9753-df4c394b9f64',  // Apertura 2026-2027
+  grupo:  '7a488240-4bad-4235-bac9-7d2e3de17971'   // 7ª División · Grupo 2 Plus
+};
+
+const SELECT = [
+  'id','fecha','hora','sede','ciudad','estado',
+  'marcador_local','marcador_visitante','es_descanso',
+  'club_local:clubes!id_club_local(nombre,nombre_corto)',
+  'club_visitante:clubes!id_club_visitante(nombre,nombre_corto)',
+  'jornada_details:jornadas!id_jornada(numero,nombre)'
+].join(',');
+
+const out     = document.getElementById('out');
+const tally   = document.getElementById('tally');
+const stamp   = document.getElementById('stamp');
+const btn     = document.getElementById('refresh');
+
+const store = {
+  get(){ try { return localStorage.getItem('afaejal_key') || ''; } catch(e){ return ''; } },
+  set(v){ try { localStorage.setItem('afaejal_key', v); } catch(e){} }
+};
+
+const apiKey = () => CONFIG.key || store.get();
+
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => (
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]
+));
+
+const fmtDay = iso => {
+  if (!iso) return 'Fecha por definir';
+  const d = new Date(iso + 'T12:00:00');
+  const s = d.toLocaleDateString('es-MX', { weekday:'long', day:'numeric', month:'long' });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+const isBye = n => /descanso/i.test(n || '');
+
+async function load(){
+  const key = apiKey();
+  if (!key) return askForKey();
+
+  btn.disabled = true;
+  tally.textContent = 'Consultando…';
+
+  const url = `${CONFIG.base}?select=${encodeURIComponent(SELECT)}`
+            + `&id_torneo=eq.${CONFIG.torneo}&id_grupo=eq.${CONFIG.grupo}`
+            + `&order=fecha.asc,hora.asc&limit=1000`;
+
+  try {
+    const res = await fetch(url, { headers:{ apikey:key, Authorization:'Bearer ' + key } });
+    if (res.status === 401 || res.status === 403) {
+      return askForKey('La llave guardada ya no sirve. Captura la actual para volver a conectar.');
+    }
+    if (!res.ok) throw new Error('El servidor respondió ' + res.status);
+    render(await res.json());
+  } catch (err) {
+    out.innerHTML = `<div class="notice">
+      <h2>No se pudieron cargar los partidos</h2>
+      <p>${esc(err.message)}. Revisa tu conexión y vuelve a intentar.</p>
+    </div>`;
+    tally.textContent = 'Sin datos';
+    stamp.textContent = '';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function askForKey(msg){
+  tally.textContent = 'Falta conectar';
+  stamp.textContent = '';
+  out.innerHTML = `<div class="notice">
+    <h2>Conecta la página con la AFAEJAL</h2>
+    <p>${esc(msg || 'Esta página lee los partidos directo de la AFAEJAL y necesita su llave pública para hacerlo. Se captura una sola vez y queda guardada en este navegador.')}</p>
+    <ol>
+      <li>Abre <code>afaejal.mx/matches</code> y presiona F12.</li>
+      <li>Ve a la pestaña Network y filtra por <code>partidos</code>.</li>
+      <li>Recarga, abre la petición y copia el encabezado <code>apikey</code>.</li>
+    </ol>
+    <div class="keyform">
+      <input id="keyin" type="text" placeholder="Pega aquí la llave" autocomplete="off" spellcheck="false">
+      <button id="keysave" type="button">Guardar y cargar</button>
+    </div>
+  </div>`;
+
+  const input = document.getElementById('keyin');
+  const save  = () => {
+    const v = input.value.trim();
+    if (v) { store.set(v); load(); }
+  };
+  document.getElementById('keysave').addEventListener('click', save);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+  input.focus();
+}
+
+function render(rows){
+  const jornadas = new Map();
+  for (const r of rows) {
+    const n = r.jornada_details?.numero ?? 0;
+    if (!jornadas.has(n)) jornadas.set(n, []);
+    jornadas.get(n).push(r);
+  }
+
+  const orden = [...jornadas.keys()].sort((a,b) => a - b);
+  const hoy = new Date().toISOString().slice(0,10);
+
+  // La jornada a resaltar: la más próxima que todavía tenga partidos sin jugar.
+  const siguiente = orden.find(n =>
+    jornadas.get(n).some(r => r.estado !== 'finalizado' && (!r.fecha || r.fecha >= hoy))
+  );
+
+  let jugados = 0, totales = 0;
+  let html = '';
+
+  for (const n of orden) {
+    const lista = jornadas.get(n).slice().sort((a,b) =>
+      (a.fecha || '9999').localeCompare(b.fecha || '9999') ||
+      (a.hora  || '99:99').localeCompare(b.hora  || '99:99')
+    );
+
+    const fechas = [...new Set(lista.map(r => r.fecha).filter(Boolean))];
+    const cabecera = fechas.length === 1 ? fmtDay(fechas[0])
+                   : fechas.length === 0 ? 'Fecha por definir'
+                   : `${fmtDay(fechas[0])} a ${fmtDay(fechas.at(-1))}`;
+
+    let cuerpo = '';
+
+    for (const r of lista) {
+      const local = r.club_local?.nombre || 'Por definir';
+      const visita = r.club_visitante?.nombre || 'Por definir';
+
+      if (r.es_descanso) {
+        const descansa = isBye(local) ? visita : local;
+        cuerpo += `<div class="bye">Descansa <b>${esc(descansa)}</b></div>`;
+        continue;
+      }
+
+      totales++;
+      const final = r.estado === 'finalizado';
+      if (final) jugados++;
+
+      const centro = final
+        ? `<div class="mid">${r.marcador_local ?? 0}–${r.marcador_visitante ?? 0}</div>`
+        : `<div class="mid pending">${r.hora ? esc(r.hora.slice(0,5)) : 'Por confirmar'}</div>`;
+
+      const pie = [
+        final && r.hora ? r.hora.slice(0,5) : null,
+        r.sede || null
+      ].filter(Boolean).join(' — ');
+
+      cuerpo += `<div class="match">
+        <div class="team home">${esc(local)}</div>
+        ${centro}
+        <div class="team">${esc(visita)}</div>
+        ${pie ? `<div class="detail">${esc(pie)}</div>` : ''}
+      </div>`;
+    }
+
+    html += `<section class="jornada${n === siguiente ? ' is-next' : ''}">
+      <div class="jnum"><b>${n}</b><span>Jornada</span></div>
+      <div>
+        <div class="daystamp">${esc(cabecera)}</div>
+        ${cuerpo}
+      </div>
+    </section>`;
+  }
+
+  out.innerHTML = html || '<div class="notice"><h2>Todavía no hay partidos</h2><p>La liga aún no publica el rol de este grupo.</p></div>';
+  tally.textContent = `${orden.length} jornadas, ${jugados} de ${totales} partidos jugados`;
+  stamp.textContent = 'Actualizado ' + new Date().toLocaleString('es-MX', {
+    day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'
+  });
+}
+
+btn.addEventListener('click', load);
+load();
+</script>
+</body>
+</html>
