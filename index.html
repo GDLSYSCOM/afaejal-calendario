@@ -49,7 +49,9 @@ body{
 
 /* Tabla de posiciones */
 .tablewrap{overflow-x:auto;margin-top:18px}
-table.pos{width:100%;border-collapse:collapse;font-size:15px;min-width:520px}
+table.pos{width:100%;border-collapse:collapse;font-size:15px;min-width:600px}
+table.pos td.pen{color:var(--ink-soft)}
+table.pos th:nth-child(7),table.pos th:nth-child(8){color:var(--pitch)}
 table.pos th{
   text-align:right;font-weight:700;font-size:12px;color:var(--ink-soft);
   padding:0 6px 8px;border-bottom:1.5px solid var(--ink);white-space:nowrap;
@@ -175,7 +177,7 @@ ol.scorers .goals{font-weight:900;font-size:19px;font-variation-settings:'wdth' 
 //  o déjala vacía y captúrala desde la propia página la primera vez.
 // ─────────────────────────────────────────────────────────────
 const CONFIG = {
-  key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3bmJvZWxtc2NkbWtkbXFmZXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAyNjU0OTEsImV4cCI6MjA3NTg0MTQ5MX0.GBK4EJJ7mYH_h9zDOQazHCIyIDrwzA19nREGJRZkEgI',
+  key: '',
   api:    'https://fwnboelmscdmkdmqfera.supabase.co/rest/v1/',
   torneo: '02dae07e-46be-40fb-9753-df4c394b9f64',  // Apertura 2026-2027
   grupo:  '7a488240-4bad-4235-bac9-7d2e3de17971',  // 7ª División · Grupo 2 Plus
@@ -186,8 +188,8 @@ const SEL_PARTIDOS = [
   'id','fecha','hora','sede','estado','es_descanso','es_playoff','serie_playoff',
   'marcador_local','marcador_visitante','ganador_penales',
   'resultado_penales_local','resultado_penales_visitante',
-  'club_local:clubes!id_club_local(id,nombre)',
-  'club_visitante:clubes!id_club_visitante(id,nombre)',
+  'club_local:clubes!id_club_local(id,nombre,nombre_corto)',
+  'club_visitante:clubes!id_club_visitante(id,nombre,nombre_corto)',
   'jornada_details:jornadas!id_jornada(numero,nombre)'
 ].join(',');
 
@@ -211,7 +213,10 @@ const fmtDay = iso => {
 };
 
 let DATA = { partidos: [], goleo: [] };
-let contarDescansos = store.get('afaejal_byes') === '1';
+
+// La liga muestra el nombre corto en la tabla; no todos los clubes lo tienen.
+const corto = c => (c?.nombre_corto || '').trim() || (c?.nombre || '').trim();
+const largo = c => (c?.nombre || '').trim() || (c?.nombre_corto || '').trim();
 
 async function q(path){
   const key = apiKey();
@@ -298,33 +303,60 @@ function askForKey(msg){
 }
 
 // ── Posiciones ────────────────────────────────────────────────
+//  Reglamento AFAEJAL, deducido de su tabla oficial:
+//   · victoria 3 pts
+//   · empate ganado en penales 2 pts   (columna EG+)
+//   · empate perdido en penales 1 pt   (columna EP-)
+//   · empate sin penales 1 pt
+//   · derrota 0 pts
+//  La jornada de descanso cuenta como partido jugado y ganado (3 pts),
+//  pero NO suma goles: el 3-0 que guarda la liga es sólo un marcador testigo.
 function calcularTabla(){
   const t = new Map();
   const fila = n => {
-    if (!t.has(n)) t.set(n, { eq:n, pj:0, g:0, e:0, p:0, gf:0, gc:0, pts:0 });
+    if (!t.has(n)) t.set(n, { eq:n, pj:0, g:0, e:0, p:0, egp:0, epp:0, gf:0, gc:0, pts:0 });
     return t.get(n);
   };
 
   for (const r of DATA.partidos) {
     if (r.estado !== 'finalizado' || r.es_playoff) continue;
-    if (r.es_descanso && !contarDescansos) continue;
 
-    const L = r.club_local?.nombre, V = r.club_visitante?.nombre;
+    const L = r.club_local, V = r.club_visitante;
+    const nL = corto(L), nV = corto(V);
+
+    // Descanso: gana quien no es el comodín, sin goles.
+    if (r.es_descanso || isBye(nL) || isBye(nV)) {
+      const quien = isBye(nL) ? nV : nL;
+      if (!quien || isBye(quien)) continue;
+      const s = fila(quien);
+      s.pj++; s.g++; s.pts += 3;
+      continue;
+    }
+
     const ml = r.marcador_local ?? 0, mv = r.marcador_visitante ?? 0;
+    const ganaPenales = quienGanoPenales(r);   // 'L', 'V' o null
 
-    for (const [yo, gf, gc] of [[L, ml, mv], [V, mv, ml]]) {
-      if (isBye(yo)) continue;
+    for (const [yo, rival, gf, gc, lado] of [[nL, nV, ml, mv, 'L'], [nV, nL, mv, ml, 'V']]) {
+      if (!yo || isBye(yo)) continue;
       const s = fila(yo);
       s.pj++; s.gf += gf; s.gc += gc;
-      if (gf > gc) { s.g++; s.pts += 3; }
-      else if (gf === gc) { s.e++; s.pts += 1; }
-      else s.p++;
+
+      if (gf > gc)      { s.g++; s.pts += 3; }
+      else if (gf < gc) { s.p++; }
+      else {
+        s.e++;
+        if (ganaPenales === lado)      { s.egp++; s.pts += 2; }
+        else if (ganaPenales)          { s.epp++; s.pts += 1; }
+        else                           { s.pts += 1; }
+      }
     }
   }
 
-  // Asegura que todos los equipos del grupo aparezcan aunque no hayan jugado.
+  // Todos los equipos del grupo aparecen, hayan jugado o no.
   for (const r of DATA.partidos) {
-    for (const n of [r.club_local?.nombre, r.club_visitante?.nombre]) {
+    if (r.es_playoff) continue;
+    for (const c of [r.club_local, r.club_visitante]) {
+      const n = corto(c);
       if (n && !isBye(n)) fila(n);
     }
   }
@@ -333,41 +365,54 @@ function calcularTabla(){
     b.pts - a.pts || (b.gf-b.gc) - (a.gf-a.gc) || b.gf - a.gf || a.eq.localeCompare(b.eq));
 }
 
+// La liga a veces guarda el ganador de penales por id de club y a veces
+// sólo el marcador de la tanda; se aceptan ambas formas.
+function quienGanoPenales(r){
+  const pl = r.resultado_penales_local, pv = r.resultado_penales_visitante;
+  if (pl != null && pv != null && pl !== pv) return pl > pv ? 'L' : 'V';
+  const g = r.ganador_penales;
+  if (!g) return null;
+  if (g === r.club_local?.id)     return 'L';
+  if (g === r.club_visitante?.id) return 'V';
+  if (/^(local|casa|home)$/i.test(g))       return 'L';
+  if (/^(visitante|visita|away)$/i.test(g)) return 'V';
+  return null;
+}
+
 function renderPosiciones(){
   const tabla = calcularTabla();
-  const filas = tabla.map((s,i) => `<tr class="${i < CONFIG.clasifican ? 'top' : ''}">
+  const filas = tabla.map((s,i) => {
+    const dif = s.gf - s.gc;
+    return `<tr class="${i < CONFIG.clasifican ? 'top' : ''}">
       <td class="rank">${i+1}</td>
       <td class="name">${esc(s.eq)}</td>
       <td>${s.pj}</td><td>${s.g}</td><td>${s.e}</td><td>${s.p}</td>
+      <td class="pen">${s.egp}</td><td class="pen">${s.epp}</td>
       <td>${s.gf}</td><td>${s.gc}</td>
-      <td>${s.gf - s.gc > 0 ? '+' : ''}${s.gf - s.gc}</td>
+      <td>${dif > 0 ? '+' + dif : dif}</td>
       <td class="pts">${s.pts}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   el('p-pos').innerHTML = `
     <div class="tablewrap">
       <table class="pos">
         <thead><tr>
           <th class="rank">#</th><th class="name">Equipo</th>
-          <th>PJ</th><th>G</th><th>E</th><th>P</th>
-          <th>GF</th><th>GC</th><th>DG</th><th>Pts</th>
+          <th>JJ</th><th>G</th><th>E</th><th>P</th>
+          <th>EG+</th><th>EP-</th>
+          <th>GF</th><th>GC</th><th>DIF</th><th>PTS</th>
         </tr></thead>
         <tbody>${filas}</tbody>
       </table>
     </div>
-    <div class="opt">
-      <input type="checkbox" id="byes" ${contarDescansos ? 'checked' : ''}>
-      <label for="byes"><b>Contar las jornadas de descanso como victoria 3-0.</b>
-      La liga captura los descansos como partidos ganados por marcador. Actívalo si quieres que la tabla
-      coincida con la que publica la AFAEJAL; déjalo apagado para ver sólo los partidos realmente jugados.</label>
-    </div>
-    <p class="foot">Desempates: puntos, diferencia de goles, goles a favor. Se sombrean los primeros ${CONFIG.clasifican} lugares.</p>`;
-
-  el('byes').addEventListener('change', e => {
-    contarDescansos = e.target.checked;
-    store.set('afaejal_byes', contarDescansos ? '1' : '0');
-    renderPosiciones();
-  });
+    <p class="foot">
+      JJ jugados, G ganados, E empates, P perdidos, EG+ empate ganado en penales,
+      EP- empate perdido en penales, DIF diferencia de goles.
+      Se otorgan 3 puntos por victoria, 2 por empate ganado en penales y 1 por empate.
+      La jornada de descanso cuenta como partido ganado pero no suma goles.
+      Desempates: puntos, diferencia, goles a favor. Sombreados los primeros ${CONFIG.clasifican} lugares.
+    </p>`;
 }
 
 // ── Calendario ────────────────────────────────────────────────
@@ -405,8 +450,8 @@ function renderCalendario(){
 }
 
 function filaPartido(r){
-  const L = r.club_local?.nombre || 'Por definir';
-  const V = r.club_visitante?.nombre || 'Por definir';
+  const L = largo(r.club_local) || 'Por definir';
+  const V = largo(r.club_visitante) || 'Por definir';
 
   if (r.es_descanso || isBye(L) || isBye(V)) {
     const descansa = isBye(L) ? V : L;
